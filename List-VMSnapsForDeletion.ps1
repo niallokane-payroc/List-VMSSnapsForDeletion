@@ -22,11 +22,10 @@
 .NOTES
     - Requires VMware PowerCLI to be installed.
     - The script prompts for credentials to connect to vCenter servers.
-    - The HTML report is saved as "VM_Snapshot_Report.html" in the current directory.
+    - The HTML report is saved as "VM_Snapshot_Report_<YYYYMMDD_HHMMSS>.html" in the current directory.
 
 .AUTHOR
-    Niall O'Kane
-
+    Your Name
 #>
 
 # Install VMware PowerCLI module if not installed
@@ -102,6 +101,10 @@ foreach ($vc in $vcenters) {
     Disconnect-VIServer -Server $vc -Confirm:$false
 }
 
+# Get the current date and time for the report
+$runDate = Get-Date -Format "yyyyMMdd_HHmmss"
+$runDateFormatted = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+
 # Generate HTML Report with Tabs
 $htmlContent = @"
 <!DOCTYPE html>
@@ -114,7 +117,7 @@ $htmlContent = @"
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5">VM Snapshot Report</h1>
+        <h1 class="mt-5">VM Snapshot Report for $runDateFormatted</h1>
         <ul class="nav nav-tabs" id="snapshotTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="remove-tab" data-toggle="tab" href="#remove" role="tab" aria-controls="remove" aria-selected="true">Snapshots to be Removed</a>
@@ -159,7 +162,6 @@ $htmlContent += @"
             </div>
             <div class="tab-pane fade" id="persistent" role="tabpanel" aria-labelledby="persistent-tab">
                 <h2>Persistent Snapshots</h2>
-                <p>VMs Tagged with the <b>PersistantSnapshot</b> tag in VMware vSphere</p>
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -199,8 +201,8 @@ $htmlContent += @"
 </html>
 "@
 
-# Output the HTML content to a file
-$outputFile = "VM_Snapshot_Report.html"
+# Append the date and time to the output file name
+$outputFile = "VM_Snapshot_Report_$runDate.html"
 $htmlContent | Out-File -FilePath $outputFile -Encoding utf8
 
 Write-Host "Report generated and saved as $outputFile"
